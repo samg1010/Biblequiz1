@@ -1,141 +1,353 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Genesis 1–5 Bible Quiz</title>
-<style>
-  body{margin:0;font-family:Arial;background:#667eea;color:#333;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px;}
-  .box{background:white;max-width:640px;width:100%;border-radius:20px;padding:25px;box-shadow:0 15px 40px rgba(0,0,0,0.4);text-align:center;}
-  h1{font-size:26px;margin:0 0 15px;color:#2c3e50;}
-  .timer{font-size:19px;font-weight:bold;margin:10px 0;}
-  .prog{height:10px;background:#eee;border-radius:5px;overflow:hidden;margin:15px 0;}
-  .bar{height:100%;width:2%;background:#27ae60;transition:all 0.5s;}
-  h2{font-size:21px;line-height:1.5;margin:25px 0;color:#2c3e50;}
-  .opt{background:#f8f9fa;padding:18px;margin:12px;border-radius:12px;cursor:pointer;font-size:17px;}
-  .opt:hover{background:#e8f4f8;}
-  .correct{background:#d4edda !important;color:#155724 !important;font-weight:bold;border:2px solid #27ae60;}
-  .wrong{background:#f8d7da !important;color:#721c24 !important;font-weight:bold;border:2px solid #e74c3c;}
-  .exp{margin:25px 0;padding:20px;background:#e3f2fd;border-left:6px solid #3498db;border-radius:8px;display:none;font-size:16px;line-height:1.6;}
-  button{padding:15px 50px;margin:20px auto;background:#3498db;color:white;border:none;border-radius:50px;font-size:19px;opacity:0.6;cursor:not-allowed;}
-  button.ok{background:#27ae60;opacity:1;cursor:pointer;}
-  .result{display:none;margin-top:30px;}
-  .big{font-size:80px;margin:20px 0;font-weight:bold;}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bible Quiz - Mobile + Retry</title>
+    <style>
+        * { box-sizing: border-box; margin:0; padding:0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 15px;
+            min-height: 100vh;
+        }
+        h1 { font-size: 1.9rem; text-align: center; color: #2c3e50; margin: 10px 0; }
+        h2 { font-size: 1.3rem; text-align: center; color: #555; margin-bottom: 20px; }
+
+        .question {
+            background: white;
+            padding: 18px;
+            margin: 18px 0;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            font-size: 1.05rem;
+        }
+        label {
+            display: block;
+            padding: 14px 12px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        label:hover { background: #e9ecef; }
+        input[type="radio"] { margin-right: 12px; transform: scale(1.4); }
+
+        .answer-hint {
+            display: none; /* Hidden until selection */
+            font-size: 0.95rem;
+            color: #27ae60;
+            font-weight: bold;
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .explanation {
+            margin-top: 12px;
+            padding: 14px;
+            background: #e3f2fd;
+            border-left: 5px solid #2196f3;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            font-style: italic;
+            display: none;
+        }
+
+        .btn {
+            display: block;
+            width: 90%;
+            max-width: 400px;
+            margin: 25px auto;
+            padding: 16px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        #submitBtn {
+            background: #27ae60;
+            color: white;
+        }
+        #submitBtn:hover { background: #219653; }
+
+        #retryBtn {
+            background: #3498db;
+            color: white;
+            display: none;
+        }
+        #retryBtn:hover { background: #2980b9; }
+
+        #result {
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 14px;
+            background: #d4edda;
+            color: #155724;
+            display: none;
+        }
+    </style>
 </head>
 <body>
 
-<div class="box">
-  <h1>Genesis 1–5 Bible Quiz (50 Questions)</h1>
-  <div class="timer">Time: <span id="timer">0</span>s</div>
-  <div class="prog"><div class="bar" id="bar"></div></div>
+<h1 id="quizTitle">Bible Quiz</h1>
+<h2 id="chapterName">Loading...</h2>
 
-  <!-- Question loads here via JS, but fallback text below if JS is blocked -->
-  <div id="content">
-    <h2 id="question">Loading question…</h2>
-    <div id="options"></div>
-    <div class="exp" id="exp"></div>
-    <button id="next">Next →</button>
-  </div>
+<form id="quizForm"></form>
 
-  <div class="result" id="result">
-    <h2>Quiz Complete!</h2>
-    <div class="big" id="percent">0%</div>
-    <p id="finalscore"></p>
-    <button onclick="location.reload()" style="background:#3498db;">Play Again</button>
-  </div>
-</div>
+<button type="submit" form="quizForm" id="submitBtn" class="btn">Submit & Check Answers</button>
+<button type="button" id="retryBtn" class="btn">Retry Quiz</button>
+
+<div id="result"></div>
 
 <script>
-// This runs immediately — no waiting for DOMContentLoaded
-const questions = [
-  {q:"What did God create on the first day?",o:["Plants and land","Light","Sun, moon, stars","Sea creatures and birds"],a:1,e:"Genesis 1:3–5 — God created light and separated it from darkness."},
-  {q:"What did God call the light and the darkness?",o:["Morning and evening","Day and night","Good and evil","Heaven and earth"],a:1,e:"Genesis 1:5 — Day and night."},
-  {q:"On which day were the sun, moon, and stars created?",o:["Third","Fourth","Fifth","Sixth"],a:1,e:"Genesis 1:14–19 — Fourth day."},
-  {q:"What was created on the fifth day?",o:["Land animals","Birds and sea creatures","Humans","Plants"],a:1,e:"Genesis 1:20–23."},
-  {q:"On which day was mankind created?",o:["Fifth","Sixth","Seventh","First"],a:1,e:"Genesis 1:26–31 — Sixth day."},
-  {q:"In whose image was man created?",o:["Angels","Animals","God","Himself"],a:2,e:"Genesis 1:27 — In the image of God."},
-  {q:"What did God do on the seventh day?",o:["Created more","Rested","Made the garden","Named animals"],a:1,e:"Genesis 2:2–3 — Rested and blessed it."},
-  {q:"Man was formed from what?",o:["Dust of the ground","A rib","Clay","Nothing"],a:0,e:"Genesis 2:7."},
-  {q:"Woman was made from what?",o:["Dust","Adam's rib","A new creation","An animal"],a:1,e:"Genesis 2:21–22."},
-  {q:"True or False: They were both naked and felt no shame",type:"tf",a:true,e:"Genesis 2:25 — Yes."},
-  // ... (40 more real questions — all included in the full file you now have)
-  {q:"Who lived the longest in the Bible?",o:["Adam","Noah","Methuselah","Jared"],a:2,e:"Genesis 5:27 — Methuselah, 969 years."},
-  {q:"Who was taken by God and did not die?",o:["Enoch","Noah","Lamech","Seth"],a:0,e:"Genesis 5:24."},
-  {q:"The genealogy in Genesis 5 ends with whom?",o:["Abraham","Noah and his three sons","Moses","David"],a:1,e:"Genesis 5:32."}
-];
+// ============================================================
+//  EDIT ONLY THIS PART FOR A NEW QUIZ
+// ============================================================
 
-let i = 0, score = 0, start = Date.now();
-
-// Show first question immediately (no waiting)
-document.getElementById("question").innerHTML = questions[0].q;
-document.getElementById("exp").innerHTML = "";  // clear any old explanation
-
-let optsHTML = "";
-if (questions[0].type === "tf") {
-  optsHTML = `<div class="opt" data-a="true">TRUE</div><div class="opt" data-a="false">FALSE</div>`;
-} else {
-  questions[0].o.forEach((opt,j) => {
-    optsHTML += `<div class="opt" data-a="${j}">${"ABCD"[j]}. ${opt}</div>`;
-  });
-}
-document.getElementById("options").innerHTML = optsHTML;
-document.getElementById("bar").style.width = "2%";
-
-// Rest of the quiz logic (runs perfectly)
-document.getElementById("content").onclick = function(e) {
-  const btn = e.target;
-  if (!btn.classList.contains("opt")) return;
-  if (btn.classList.contains("correct") || btn.classList.contains("wrong")) return;
-
-  const userAns = btn.getAttribute("data-a") === "true" || btn.getAttribute("data-a") === "false" 
-                  ? btn.getAttribute("data-a") === "true" 
-                  : parseInt(btn.getAttribute("data-a"));
-  const correctAns = questions[i].type === "tf" ? questions[i].a : questions[i].a;
-  const isCorrect = userAns === correctAns;
-  if (isCorrect) score++;
-
-  document.querySelectorAll(".opt").forEach(el => {
-    const val = el.getAttribute("data-a") === "true" ? true : el.getAttribute("data-a") === "false" ? false : parseInt(el.getAttribute("data-a"));
-    if (val === correctAns) el.classList.add("correct");
-    else if (val === userAns && !isCorrect) el.classList.add("wrong");
-  });
-
-  document.getElementById("exp").innerHTML = questions[i].e;
-  document.getElementById("exp").style.display = "block";
-  document.getElementById("next").classList.add("ok");
-  document.getElementById("next").textContent = "Next →";
+const quizData = {
+    title: "Luke Chapters 1–5, Genesis 1-5",
+    chapter: "Luke 1–5, Genesis 1-5",
+    questions: [
+        { q: "To whom did Luke address his Gospel?", type: "mc", options: ["Timothy", "Theophilus", "Titus", "Churches"], correct: 1, exp: "Theophilus (Luke 1:3)" },
+        { q: "The events began in the time of which king?", type: "mc", options: ["Augustus", "Herod, king of Judea", "Pilate", "Tiberius"], correct: 1, exp: "Herod, king of Judea (Luke 1:5)" },
+        { q: "Zechariah was from the priestly division of:", type: "mc", options: ["Abijah", "Kohath", "Merari", "Gershon"], correct: 0, exp: "Abijah (Luke 1:5)" },
+        { q: "True/False: Zechariah & Elizabeth were blameless before God.", type: "tf", correct: true, exp: "True (Luke 1:6)" },
+        { q: "Why were they childless?", type: "mc", options: ["Sin", "Elizabeth was barren & both old", "They didn't pray", "Curse"], correct: 1, exp: "Elizabeth barren, both advanced in years (Luke 1:7)" },
+        { q: "Gabriel appeared to Zechariah beside the:", type: "mc", options: ["Ark", "Altar of incense", "Holy of Holies", "Bronze altar"], correct: 1, exp: "Altar of incense (Luke 1:11)" },
+        { q: "True/False: Zechariah believed the angel immediately.", type: "tf", correct: false, exp: "False – he doubted (Luke 1:18–20)" },
+        { q: "The child was to be named:", type: "mc", options: ["Zechariah", "John", "Jesus", "Elijah"], correct: 1, exp: "John (Luke 1:13)" },
+        { q: "John would come in the spirit/power of:", type: "mc", options: ["Moses", "Elijah", "David", "Samuel"], correct: 1, exp: "Elijah (Luke 1:17)" },
+        { q: "Gabriel visited Mary in:", type: "mc", options: ["Bethlehem", "Nazareth", "Jerusalem", "Galilee"], correct: 1, exp: "Nazareth (Luke 1:26)" },
+        { q: "Jesus will be called Son of the:", type: "mc", options: ["Highest", "Father", "Lord", "Most High"], correct: 3, exp: "Son of the Most High (Luke 1:32)" },
+        { q: "He will reign over the house of ___ forever.", type: "mc", options: ["Israel", "Judah", "Jacob", "David"], correct: 2, exp: "House of Jacob (Luke 1:33)" },
+        { q: "Mary responded:", type: "mc", options: ["How?", "I am the Lord's servant – let it be", "Not me", "Glory!"], correct: 1, exp: "Luke 1:38" },
+        { q: "When Mary greeted Elizabeth, the baby:", type: "mc", options: ["Slept", "Leaped for joy", "Cried", "Kicked"], correct: 1, exp: "Leaped (Luke 1:41)" },
+        { q: "Mary's song is called the:", type: "mc", options: ["Benedictus", "Magnificat", "Nunc Dimittis", "Gloria"], correct: 1, exp: "Magnificat (Luke 1:46–55)" },
+        { q: "Mary stayed with Elizabeth about:", type: "mc", options: ["1 week", "40 days", "3 months", "1 year"], correct: 2, exp: "Three months (Luke 1:56)" },
+        { q: "True/False: They wanted to name the baby Zechariah.", type: "tf", correct: true, exp: "Yes (Luke 1:59)" },
+        { q: "Zechariah wrote:", type: "mc", options: ["Bless God", "His name is John", "Praise the Lord", "Elizabeth speaks"], correct: 1, exp: "His name is John (Luke 1:63)" },
+        { q: "Zechariah’s song is known as the:", type: "mc", options: ["Magnificat", "Benedictus", "Te Deum", "Gloria"], correct: 1, exp: "Benedictus (Luke 1:68–79)" },
+        { q: "John grew and became strong in:", type: "mc", options: ["Body", "Spirit", "Knowledge", "Faith"], correct: 1, exp: "Spirit (Luke 1:80)" },
+        { q: "Why did Joseph and Mary go to Bethlehem?", type:"mc", options:["To pay taxes","For the census","To visit family","Because of Herod"], correct:1, exp:"For the census decreed by Caesar Augustus (Luke 2:1–4)" },
+        { q: "Joseph was of the house and line of:", type:"mc", options:["Levi","Judah","David","Aaron"], correct:2, exp:"David (Luke 2:4)" },
+        { q: "Where was Jesus born because there was no guest room available?", type:"mc", options:["A stable","A cave","An upper room","The manger"], correct:3, exp:"He was laid in a manger (Luke 2:7)" },
+        { q: "True/False: Mary wrapped Jesus in swaddling cloths and laid Him in a manger.", type:"tf", correct:true, exp:"True (Luke 2:7)" },
+        { q: "Who was keeping watch over their flocks at night when the angel appeared?", type:"mc", options:["Priests","Fishermen","Shepherds","Tax collectors"], correct:2, exp:"Shepherds (Luke 2:8)" },
+        { q: "The angel told the shepherds, “Fear not, for behold, I bring you ___ tidings of great joy.”", type:"mc", options:["Good","Wonderful","Amazing","Joyful"], correct:0, exp:"Good tidings (Luke 2:10)" },
+        { q: "The sign given to the shepherds was:", type:"mc", options:["A star","A baby wrapped in cloths lying in a manger","An angel choir","A bright light"], correct:1, exp:"Luke 2:12" },
+        { q: "What suddenly appeared with the angel?", type:"mc", options:["A multitude of the heavenly host","Thousands of angels","A cloud of glory","Fire"], correct:0, exp:"Multitude of the heavenly host (Luke 2:13)" },
+        { q: "True/False: The shepherds went straight to Bethlehem and found Mary, Joseph, and the baby.", type:"tf", correct:true, exp:"True (Luke 2:15–16)" },
+        { q: "After seeing Jesus, the shepherds:", type:"mc", options:["Kept it secret","Told everyone what they had seen and heard","Returned quietly","Stayed with the family"], correct:1, exp:"Spread the word (Luke 2:17–18)" },
+        { q: "On the eighth day, Jesus was circumcised and given the name:", type:"mc", options:["Immanuel","Joshua","Jesus","John"], correct:2, exp:"Jesus – the name given by the angel (Luke 2:21)" },
+        { q: "How many days after birth did they present Jesus in the temple?", type:"mc", options:["8 days","33 days","40 days","60 days"], correct:2, exp:"40 days – according to the law of purification (Luke 2:22–24)" },
+        { q: "Who was the righteous and devout man waiting for the consolation of Israel?", type:"mc", options:["Zacharias","Simeon","Gamaliel","Nicodemus"], correct:1, exp:"Simeon (Luke 2:25)" },
+        { q: "Simeon said Jesus would be a light for revelation to the Gentiles and glory for:", type:"mc", options:["Jerusalem","Israel","The temple","The nations"], correct:1, exp:"Your people Israel (Luke 2:32)" },
+        { q: "True/False: Anna the prophetess was very young.", type:"tf", correct:false, exp:"False – she was very old, a widow of 84 years (Luke 2:36–37)" },
+        { q: "Anna gave thanks to God and spoke of the child to all who were:", type:"mc", options:["Looking for redemption in Jerusalem","Waiting for the Messiah","In the temple","Priests"], correct:0, exp:"Looking for the redemption of Jerusalem (Luke 2:38)" },
+        { q: "Where did the family go after the events in Jerusalem?", type:"mc", options:["Nazareth","Capernaum","Bethlehem","Egypt"], correct:0, exp:"Nazareth (Luke 2:39)" },
+        { q: "How old was Jesus when He stayed behind in Jerusalem?", type:"mc", options:["8","12","15","30"], correct:1, exp:"12 years old (Luke 2:42)" },
+        { q: "Jesus was found in the temple sitting among the teachers:", type:"mc", options:["Listening and asking questions","Teaching them","Reading Scripture","Praying"], correct:0, exp:"Listening to them and asking questions (Luke 2:46)" },
+        { q: "Jesus told His parents, “Did you not know that I must be ___?”", type:"mc", options:["In My Father’s house","About My Father’s business","Praying","Studying the Law"], correct:0, exp:"In My Father’s house (Luke 2:49)" },
+        { q: "In what year of Tiberius Caesar’s reign did the word of God come to John?", type:"mc", options:["10th","15th","20th","25th"], correct:1, exp:"15th year (Luke 3:1)" },
+        { q: "Who was the governor of Judea at that time?", type:"mc", options:["Herod","Pontius Pilate","Felix","Quirinius"], correct:1, exp:"Pontius Pilate (Luke 3:1)" },
+        { q: "Herod was tetrarch of:", type:"mc", options:["Judea","Galilee","Iturea and Trachonitis","All of the above"], correct:3, exp:"Luke 3:1 lists several regions" },
+        { q: "True/False: John the Baptist preached in Jerusalem.", type:"tf", correct:false, exp:"False – in the wilderness around the Jordan (Luke 3:2–3)" },
+        { q: "John’s baptism was one of:", type:"mc", options:["Repentance for forgiveness of sins","Infant dedication","Cleansing for priests","Believer’s baptism only"], correct:0, exp:"Repentance for the forgiveness of sins (Luke 3:3)" },
+        { q: "Which Old Testament prophet did Luke quote as saying “Prepare the way of the Lord”?", type:"mc", options:["Jeremiah","Ezekiel","Isaiah","Malachi"], correct:2, exp:"Isaiah 40:3–5 (Luke 3:4–6)" },
+        { q: "John told the crowds to produce fruit in keeping with:", type:"mc", options:["Faith","Repentance","Obedience","Sacrifice"], correct:1, exp:"Repentance (Luke 3:8)" },
+        { q: "True/False: John said, “We have Abraham as our father” is enough for salvation.", type:"tf", correct:false, exp:"False – God can raise children for Abraham from stones (Luke 3:8)" },
+        { q: "What did John tell tax collectors to stop doing?", type:"mc", options:["Collecting taxes","Collecting more than required","Working for Rome","Helping the poor"], correct:1, exp:"Collect no more than authorized (Luke 3:12–13)" },
+        { q: "To soldiers, John said “Do not ___ or accuse anyone falsely.”", type:"mc", options:["Steal","Extort money","Fight","Desert"], correct:1, exp:"Extort money (Luke 3:14)" },
+        { q: "The people wondered if John might be:", type:"mc", options:["Elijah","The Prophet","The Christ","Isaiah"], correct:2, exp:"The Christ (Luke 3:15)" },
+        { q: "John said one is coming who will baptize with:", type:"mc", options:["Water and fire","The Holy Spirit and fire","Oil and water","The Word"], correct:1, exp:"Holy Spirit and fire (Luke 3:16)" },
+        { q: "John said he was not worthy to:", type:"mc", options:["Carry His sandals","Touch His robe","Speak His name","Look at Him"], correct:0, exp:"Untie the strap of His sandals (Luke 3:16)" },
+        { q: "His winnowing fork is in His hand to:", type:"mc", options:["Gather wheat and burn chaff","Separate sheep from goats","Clean the temple","Judge the nations"], correct:0, exp:"Clear His threshing floor (Luke 3:17)" },
+        { q: "Why was John eventually put in prison?", type:"mc", options:["Preaching against Rome","Rebuking Herod for marrying Herodias","Baptizing too many people","Claiming to be the Christ"], correct:1, exp:"Herodias issue (Luke 3:19–20)" },
+        { q: "When Jesus was baptized, the heavens were:", type:"mc", options:["Silent","Opened","Filled with angels","Darkened"], correct:1, exp:"Opened (Luke 3:21)" },
+        { q: "The Holy Spirit descended on Jesus in bodily form like a:", type:"mc", options:["Flame","Dove","Wind","Cloud"], correct:1, exp:"Dove (Luke 3:22)" },
+        { q: "A voice from heaven said, “You are My beloved Son; with You I am:", type:"mc", options:["Pleased","Satisfied","Well pleased","Happy"], correct:2, exp:"Well pleased (Luke 3:22)" },
+        { q: "True/False: Jesus was about 30 years old when He began His ministry.", type:"tf", correct:true, exp:"True (Luke 3:23)" },
+        { q: "In Luke’s genealogy, Jesus is the son of Joseph, who was the son of:", type:"mc", options:["David","Jacob","Heli","Eliakim"], correct:2, exp:"Heli (Luke 3:23)" },
+        { q: "After His baptism, Jesus was led by the Spirit into the:", type:"mc", options:["Galilee","Temple","Wilderness","Jordan River"], correct:2, exp:"Wilderness (Luke 4:1)" },
+        { q: "How many days did Jesus fast in the wilderness?", type:"mc", options:["3 days","7 days","40 days","One week"], correct:2, exp:"40 days (Luke 4:2)" },
+        { q: "True/False: Jesus was hungry after the 40 days.", type:"tf", correct:true, exp:"True (Luke 4:2)" },
+        { q: "The devil’s first temptation was to turn stones into:", type:"mc", options:["Water","Wine","Bread","Gold"], correct:2, exp:"Bread (Luke 4:3)" },
+        { q: "Jesus answered, “Man shall not live by ___ alone.”", type:"mc", options:["Bread","Water","Work","Wealth"], correct:0, exp:"Bread (Luke 4:4, quoting Deut 8:3)" },
+        { q: "In the second temptation, the devil showed Jesus all the kingdoms of the world in a:", type:"mc", options:["Vision","Dream","Moment of time","Mirror"], correct:2, exp:"Moment of time (Luke 4:5)" },
+        { q: "The devil said he could give Jesus authority over all kingdoms if Jesus would:", type:"mc", options:["Bow down and worship him","Pay tribute","Deny God","Leave the wilderness"], correct:0, exp:"Worship me (Luke 4:6–7)" },
+        { q: "Jesus replied, “You shall worship the Lord your God and Him ___ only.”", type:"mc", options:["Fear","Love","Serve","Obey"], correct:2, exp:"Serve (Luke 4:8, Deut 6:13)" },
+        { q: "For the third temptation, the devil took Jesus to the pinnacle of the:", type:"mc", options:["Mount Sinai","Temple","Mount of Olives","Tower of David"], correct:1, exp:"Temple (Luke 4:9)" },
+        { q: "The devil quoted Scripture saying angels would protect Jesus if He:", type:"mc", options:["Jumped from the pinnacle","Fasted 40 days","Prayed all night","Walked on water"], correct:0, exp:"Threw Himself down (Luke 4:9–11)" },
+        { q: "True/False: Jesus corrected the devil by saying, “You shall not put the Lord your God to the test.”", type:"tf", correct:true, exp:"True (Luke 4:12)" },
+        { q: "After the temptations, Jesus returned in the power of the Spirit to:", type:"mc", options:["Judea","Nazareth","Galilee","Jerusalem"], correct:2, exp:"Galilee (Luke 4:14)" },
+        { q: "In His hometown synagogue, Jesus read from the scroll of:", type:"mc", options:["Isaiah","Jeremiah","Ezekiel","Daniel"], correct:0, exp:"Isaiah (Luke 4:17)" },
+        { q: "Jesus said the Scripture was fulfilled that day: “The Spirit of the Lord is upon Me… to proclaim ___ to the captives.”", type:"mc", options:["Liberty","Judgment","Peace","Forgiveness"], correct:0, exp:"Liberty (Luke 4:18)" },
+        { q: "The people in Nazareth were furious when Jesus mentioned that prophets are not accepted in their:", type:"mc", options:["Hometown","Synagogue","Generation","Nation"], correct:0, exp:"Hometown (Luke 4:24)" },
+        { q: "They tried to throw Jesus off a cliff near:", type:"mc", options:["Nazareth","Capernaum","Jerusalem","Bethlehem"], correct:0, exp:"Nazareth (Luke 4:29)" },
+        { q: "True/False: Jesus escaped by miraculously passing through the crowd.", type:"tf", correct:true, exp:"True – He walked right through them (Luke 4:30)" },
+        { q: "In Capernaum, Jesus taught on the Sabbath and the people were amazed at His:", type:"mc", options:["Miracles","Authority","Kindness","Appearance"], correct:1, exp:"Teaching with authority (Luke 4:32)" },
+        { q: "Jesus cast out a demon who cried, “You are the ___ of God!”", type:"mc", options:["Son","Servant","Holy One","Messiah"], correct:2, exp:"Holy One of God (Luke 4:34)" },
+        { q: "That evening, people brought to Jesus many who were sick or demon-possessed, and He:", type:"mc", options:["Healed them all","Healed some","Sent them away","Prayed over them only"], correct:0, exp:"Laid hands on each one and healed them (Luke 4:40–41)" },
+        { q: "Where was Jesus teaching when the crowd pressed around Him?", type:"mc", options:["Synagogue","Mountainside","By the Lake of Gennesaret","Temple"], correct:2, exp:"Lake of Gennesaret (Sea of Galilee) (Luke 5:1)" },
+        { q: "Jesus got into the boat belonging to:", type:"mc", options:["Andrew","Peter","James","John"], correct:1, exp:"Simon (Peter) (Luke 5:3)" },
+        { q: "After teaching, Jesus told Simon to:", type:"mc", options:["Go home","Put out into deep water and let down the nets","Sell the boat","Mend the nets"], correct:1, exp:"Let down the nets for a catch (Luke 5:4)" },
+        { q: "True/False: They caught nothing all night.", type:"tf", correct:true, exp:"True (Luke 5:5)" },
+        { q: "When they obeyed, their catch was so large that:", type:"mc", options:["The boat sank","Their nets began to break","They threw fish away","They sold it immediately"], correct:1, exp:"Nets began to break (Luke 5:6)" },
+        { q: "Simon Peter fell at Jesus’ knees and said:", type:"mc", options:["Depart from me, for I am a sinful man","Who are You?","Lord, save us!","Increase our faith"], correct:0, exp:"Depart from me, for I am a sinful man, O Lord (Luke 5:8)" },
+        { q: "Jesus told Simon, James, and John they would now catch:", type:"mc", options:["Bigger fish","Men","Nothing","Wealth"], correct:1, exp:"Men (Luke 5:10)" },
+        { q: "What did they do with their boats after the miracle?", type:"mc", options:["Sold them","Repaired them","Left everything and followed Jesus","Gave them away"], correct:2, exp:"Left everything and followed Him (Luke 5:11)" },
+        { q: "Jesus healed a man who was full of:", type:"mc", options:["Blindness","Demons","Leprosy","Fever"], correct:2, exp:"Leprosy (Luke 5:12)" },
+        { q: "The leper said, “Lord, if You are willing, You can:", type:"mc", options:["Heal me","Forgive me","Make me clean","Raise me"], correct:2, exp:"Make me clean (Luke 5:12)" },
+        { q: "Jesus touched the leper and said:", type:"mc", options:["Be clean","Your faith has healed you","Go show yourself","I am willing"], correct:0, exp:"I am willing; be clean (Luke 5:13)" },
+        { q: "True/False: Jesus told the healed man to tell everyone.", type:"tf", correct:false, exp:"False – He told him not to tell anyone but to show himself to the priest (Luke 5:14)" },
+        { q: "Jesus often withdrew to lonely places to:", type:"mc", options:["Sleep","Teach disciples","Pray","Hide"], correct:2, exp:"Pray (Luke 5:16)" },
+        { q: "Some men brought a paralysed man on a mat and lowered him through the:", type:"mc", options:["Window","Roof","Door","Wall"], correct:1, exp:"Roof (Luke 5:19)" },
+        { q: "Jesus first said to the paralysed man:", type:"mc", options:["Rise and walk","Your sins are forgiven","Your faith has healed you","Stand up"], correct:1, exp:"Your sins are forgiven (Luke 5:20)" },
+        { q: "The scribes and Pharisees thought this was blasphemy because only ___ can forgive sins.", type:"mc", options:["Priests","God","Angels","Prophets"], correct:1, exp:"God alone (Luke 5:21)" },
+        { q: "To prove His authority, Jesus told the man to:", type:"mc", options:["Rise, take up your bed and go home","Praise God","Pay taxes","Tell the priest"], correct:0, exp:"Rise, take up your bed and go home (Luke 5:24)" },
+        { q: "After calling Levi (Matthew) the tax collector, Jesus ate at his:", type:"mc", options:["Boat","Synagogue","House","Temple"], correct:2, exp:"House (Luke 5:29)" },
+        { q: "The Pharisees complained that Jesus ate with:", type:"mc", options:["Tax collectors and sinners","Pharisees","Disciples only","Children"], correct:0, exp:"Tax collectors and sinners (Luke 5:30)" },
+        { q: "Jesus replied, “Those who are well have no need of a physician, but:", type:"mc", options:["Those who are sick","The righteous","The Pharisees","The poor"], correct:0, exp:"Those who are sick (Luke 5:31)" },
+{ q: "What did God create on the very first day?", type: "mc", options: ["Plants", "Light", "Animals", "Heavens only"], correct: 1, exp: "Gen 1:3–5 – Light" },
+        { q: "God called the light 'day' and the darkness He called what?", type: "mc", options: ["Evening", "Night", "Shadow", "Chaos"], correct: 1, exp: "Gen 1:5" },
+        { q: "The firmament separated what?", type: "mc", options: ["Land & sea", "Waters above & below", "Day & night", "Heaven & earth"], correct: 1, exp: "Gen 1:6–8" },
+        { q: "On which day did dry land and vegetation appear?", type: "mc", options: ["2nd", "3rd", "4th", "5th"], correct: 1, exp: "Gen 1:9–13 – 3rd day" },
+        { q: "Sun, moon and stars were created on which day?", type: "mc", options: ["3rd", "4th", "5th", "6th"], correct: 1, exp: "Gen 1:14–19 – 4th day" },
+        { q: "What was created on the fifth day?", type: "mc", options: ["Land animals", "Sea creatures & birds", "Humans", "Insects"], correct: 1, exp: "Gen 1:20–23" },
+        { q: "Mankind was created on which day?", type: "mc", options: ["5th", "6th", "7th", "1st"], correct: 1, exp: "Gen 1:26–31 – 6th day" },
+        { q: "In whose image was man created?", type: "mc", options: ["Angels", "Animals", "God", "No one"], correct: 2, exp: "Gen 1:27" },
+        { q: "What did God do on the seventh day?", type: "mc", options: ["Worked", "Rested and blessed it", "Made Eden", "Named animals"], correct: 1, exp: "Gen 2:2–3" },
+        { q: "How did God describe everything He had made?", type: "mc", options: ["Good", "Very good", "Perfect", "Incomplete"], correct: 1, exp: "Gen 1:31 – Very good" },
+        { q: "How was the first man formed?", type: "mc", options: ["Dust + breath of life", "Spoken only", "From a rib", "From water"], correct: 0, exp: "Gen 2:7" },
+        { q: "Where did God put the man?", type: "mc", options: ["Canaan", "Garden in Eden", "Jerusalem", "Egypt"], correct: 1, exp: "Gen 2:8" },
+        { q: "Name one of the two special trees in the garden", type: "mc", options: ["Fig tree", "Tree of life", "Olive tree", "Cedar"], correct: 1, exp: "Gen 2:9" },
+        { q: "What command did God give about the tree of knowledge?", type: "mc", options: ["Eat freely", "Do not eat", "Eat only once", "Burn it"], correct: 1, exp: "Gen 2:16–17" },
+        { q: "Why did God say it is not good for man to be alone?", type: "mc", options: ["He was lonely", "No suitable helper", "He needed children", "He was lazy"], correct: 1, exp: "Gen 2:18" },
+        { q: "Woman was created from what?", type: "mc", options: ["Dust", "Adam's rib", "New clay", "An animal"], correct: 1, exp: "Gen 2:21–22" },
+        { q: "What did Adam say when he saw the woman?", type: "mc", options: ["She is beautiful", "Bone of my bones", "She is weak", "She will rule"], correct: 1, exp: "Gen 2:23" },
+        { q: "They shall become what?", type: "mc", options: ["Two fleshes", "One flesh", "Enemies", "Parents"], correct: 1, exp: "Gen 2:24" },
+        { q: "True or False: They were naked and felt no shame", type: "tf", correct: true, exp: "Gen 2:25" },
+        { q: "How many rivers flowed out of Eden?", type: "mc", options: ["One", "Two", "Three", "Four"], correct: 3, exp: "Gen 2:10–14" },
+        { q: "Who was more crafty than any other beast?", type: "mc", options: ["Lion", "Serpent", "Fox", "Dragon"], correct: 1, exp: "Gen 3:1" },
+        { q: "The serpent said 'You will not surely …'", type: "mc", options: ["Live", "Die", "Sin", "Be punished"], correct: 1, exp: "Gen 3:4" },
+        { q: "After eating, they sewed what for coverings?", type: "mc", options: ["Animal skins", "Fig leaves", "Cloth", "Bark"], correct: 1, exp: "Gen 3:7" },
+        { q: "Adam blamed whom?", type: "mc", options: ["Serpent", "Eve", "God who gave the woman", "Himself"], correct: 2, exp: "Gen 3:12" },
+        { q: "The woman blamed whom?", type: "mc", options: ["Adam", "Serpent", "God", "Herself"], correct: 1, exp: "Gen 3:13" },
+        { q: "The serpent was cursed to go on its what?", type: "mc", options: ["Belly", "Back", "Legs", "Tail"], correct: 0, exp: "Gen 3:14" },
+        { q: "Gen 3:15 is the first promise of whom?", type: "mc", options: ["Noah", "Messiah", "Abraham", "Moses"], correct: 1, exp: "Protoevangelium" },
+        { q: "Who killed his brother?", type: "mc", options: ["Cain", "Abel", "Lamech", "Seth"], correct: 0, exp: "Gen 4:8" },
+        { q: "What question did Cain ask God?", type: "mc", options: ["Where is Abel?", "Am I my brother's keeper?", "Why me?", "What have I done?"], correct: 1, exp: "Gen 4:9" },
+        { q: "Who lived 969 years?", type: "mc", options: ["Adam", "Noah", "Methuselah", "Jared"], correct: 2, exp: "Gen 5:27" },
+        { q: "The genealogy in Genesis 5 ends with whom?", type: "mc", options: ["Abraham", "Noah and his three sons", "Moses", "David"], correct: 1, exp: "Gen 5:32" }
+    ]
 };
 
-document.getElementById("next").onclick = function() {
-  if (!this.classList.contains("ok")) return;
-  i++;
-  if (i >= questions.length) {
-    const pct = Math.round((score/questions.length)*100);
-    document.getElementById("content").style.display = "none";
-    document.getElementById("result").style.display = "block";
-    document.getElementById("percent").textContent = pct + "%";
-    document.getElementById("percent").style.color = pct >= 80 ? "green" : "red";
-    document.getElementById("finalscore").innerHTML = `<strong>${score}/50 correct</strong><br>Time: ${Math.floor((Date.now()-start)/1000)} seconds`;
-    return;
-  }
-  document.getElementById("question").innerHTML = questions[i].q;
-  document.getElementById("exp").style.display = "none";
-  document.getElementById("next").classList.remove("ok");
-  document.getElementById("next").textContent = "Next →";
+// ============================================================
+//  DO NOT EDIT BELOW
+// ============================================================
 
-  let html = "";
-  if (questions[i].type === "tf") {
-    html = `<div class="opt" data-a="true">TRUE</div><div class="opt" data-a="false">FALSE</div>`;
-  } else {
-    questions[i].o.forEach((opt,j) => {
-      html += `<div class="opt" data-a="${j}">${"ABCD"[j]}. ${opt}</div>`;
+document.getElementById("quizTitle").textContent = quizData.title;
+document.getElementById("chapterName").textContent = quizData.chapter;
+
+const form = document.getElementById("quizForm");
+const submitBtn = document.getElementById("submitBtn");
+const retryBtn = document.getElementById("retryBtn");
+const resultDiv = document.getElementById("result");
+
+// Build quiz
+quizData.questions.forEach((item, i) => {
+    const qNum = i + 1;
+    const div = document.createElement("div");
+    div.className = "question";
+    div.innerHTML = `<p><strong>${qNum}.</strong> ${item.q}</p>`;
+
+    if (item.type === "tf") {
+        const correctText = item.correct ? "True" : "False";
+        div.innerHTML += `
+            <label><input type="radio" name="q${qNum}" value="true"> True</label>
+            <label><input type="radio" name="q${qNum}" value="false"> False</label>
+            <div class="answer-hint">Correct answer: ${correctText}</div>
+        `;
+    } else {
+        item.options.forEach((opt, idx) => {
+            div.innerHTML += `<label><input type="radio" name="q${qNum}" value="${idx}"> ${opt}</label>`;
+        });
+        const correctOpt = item.options[item.correct];
+        div.innerHTML += `<div class="answer-hint">Correct answer: ${correctOpt}</div>`;
+    }
+
+    div.innerHTML += `<div class="explanation">${item.exp}</div>`;
+    form.appendChild(div);
+
+    // Add event listener to show answer hint when any option is selected
+    const radios = div.querySelectorAll(`input[name="q${qNum}"]`);
+    radios.forEach(radio => {
+        radio.addEventListener("change", () => {
+            div.querySelector(".answer-hint").style.display = "block";
+        });
     });
-  }
-  document.getElementById("options").innerHTML = html;
-  document.getElementById("bar").style.width = (i+1)/questions.length*100 + "%";
-};
+});
 
-setInterval(() => document.getElementById("timer").textContent = Math.floor((Date.now()-start)/1000), 1000);
+// Submit handler
+form.addEventListener("submit", function(e) {
+    e.preventDefault();
+    let score = 0;
+    const total = quizData.questions.length;
+
+    quizData.questions.forEach((item, i) => {
+        const qNum = i + 1;
+        const selected = document.querySelector(`input[name="q${qNum}"]:checked`);
+        const labels = document.querySelectorAll(`label input[name="q${qNum}"]`);
+        const exp = labels[0].closest('.question').querySelector('.explanation');
+
+        labels.forEach(l => l.parentElement.style.color = "");
+
+        if (selected) {
+            const correctVal = item.type === "tf" ? item.correct.toString() : item.correct.toString();
+            if (selected.value === correctVal) {
+                score++;
+                selected.parentElement.style.color = "#27ae60";
+            } else {
+                selected.parentElement.style.color = "#e74c3c";
+            }
+        }
+        exp.style.display = "block";
+    });
+
+    const pct = Math.round(score / total * 100);
+    resultDiv.style.display = "block";
+    resultDiv.innerHTML = `Your Score: <span style="color:#27ae60;">${score}/${total}</span> (${pct}%)<br>
+        ${pct === 100 ? "Perfect! Excellent!" : pct >= 80 ? "Great job!" : "Keep studying God's Word!"}`;
+
+    submitBtn.style.display = "none";
+    retryBtn.style.display = "block";
+    resultDiv.scrollIntoView({ behavior: "smooth" });
+});
+
+// Retry
+retryBtn.addEventListener("click", () => {
+    form.reset();
+    document.querySelectorAll("label").forEach(l => l.style.color = "");
+    document.querySelectorAll(".explanation").forEach(e => e.style.display = "none");
+    document.querySelectorAll(".answer-hint").forEach(h => h.style.display = "none");
+    resultDiv.style.display = "none";
+    submitBtn.style.display = "block";
+    retryBtn.style.display = "none";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+});
 </script>
+
 </body>
 </html>
